@@ -17,7 +17,7 @@
         // API lưu câu trả lời 
         Route::post('/submit-exam/{rid}', [QuestionController::class, 'submitExam']);
         Route::post('/save-answer', [QuestionController::class, 'storeAnswer']);
-        Route::get('/quizs', [QuestionController::class, 'quizcato']);
+        Route::get('/quiz-detail', [QuestionController::class, 'getShowCid61']);
         Route::get('/result/{rid}', [QuestionController::class, 'viewResultDetail']);
 
         // Xem tổng hợp lịch sử

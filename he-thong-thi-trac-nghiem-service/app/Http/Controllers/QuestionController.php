@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\SavsoftOption;
 use App\Models\User;
 use App\Models\SavsoftResult;
+use App\Models\SavsoftQuiz;
 class QuestionController extends Controller
 {
     public function index(Request $request, $quid = 62)
@@ -224,5 +225,21 @@ public function viewResultDetail($rid)
         'info' => $result,       // Chứa thông tin điểm, thời gian, tên bộ đề
         'questions' => $questions // Chứa nội dung 40 câu hỏi và các đáp án
     ], 200);
+}
+public function getShowCid61()
+{
+    $quiz = SavsoftQuiz::where('quid', 61)->first();
+    if (!$quiz) {
+        return response()->json(['message' => 'Không tìm thấy đề thi'], 404);
+    }
+    return response()->json([
+        'status' => 'success',
+        'data' => [
+            'Tên đề thi:' => $quiz->quiz_name,
+            'Thời lượng(phút)' => $quiz->duration, // Ví dụ: 45 (phút)
+            'Số lượng câu hỏi:' => $quiz->noq,
+            'Số lần làm bài:' => $quiz->question_selection, //  (chỉ được làm 1 lần)
+            ]
+    ]);
 }
 }
