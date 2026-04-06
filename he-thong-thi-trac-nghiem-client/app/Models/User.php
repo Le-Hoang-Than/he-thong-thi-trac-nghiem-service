@@ -12,32 +12,16 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    // tại bảng trên db là savsoft_user nên phải đặt để lấy dữ liệu
-    protected $table = 'savsoft_users';
-
-    protected $primaryKey = 'uid';
-
-    public $timestamps = false;
-
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-protected $fillable = [
-    'studentid',
-    'email',
-    'password',
-    'verify_code',
-    'first_name',
-    'last_name',
-    'gid',
-    'su',
-    'subscription_expired',
-    'registered_date',
-    'user_status',
-    'note'
-];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -58,6 +42,7 @@ protected $fillable = [
     {
         return [
             'email_verified_at' => 'datetime',
+            'password' => 'hashed',
         ];
     }
 }
