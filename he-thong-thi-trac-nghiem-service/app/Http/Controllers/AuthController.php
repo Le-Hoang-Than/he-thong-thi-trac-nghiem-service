@@ -46,38 +46,40 @@ class AuthController extends Controller
 //     }
 // }
 public function login(Request $request)
-{
-    $request->validate([
-        'studentid' => 'required',
-        'password' => 'required'
-    ]);
+    {
+        $request->validate([
+            'studentid' => 'required',
+            'password' => 'required'
+        ]);
 
-    $user = User::where('email', 'LIKE', $request->studentid . '%')->first();
+        // SỬA DÒNG NÀY: Ép in hoa và tìm ĐÚNG cột studentid
+        $studentId = strtoupper($request->studentid);
+        $user = User::where('studentid', $studentId)->first();
 
-    if(!$user){
+        if(!$user){
+            return response()->json([
+                'message'=>'StudentID không tồn tại'
+            ],404);
+        }
+
+        if(md5($request->password) != $user->password){
+            return response()->json([
+                'message'=>'Sai mật khẩu'
+            ],401);
+        }
+
+        // tạo token
+        $token = bin2hex(random_bytes(32));
+
+        $user->web_token = $token;
+        $user->save();
+
         return response()->json([
-            'message'=>'StudentID không tồn tại'
-        ],404);
+            'message'=>'Đăng nhập thành công',
+            'token'=>$token,
+            'user'=>$user
+        ]);
     }
-
-    if(md5($request->password) != $user->password){
-        return response()->json([
-            'message'=>'Sai mật khẩu'
-        ],401);
-    }
-
-    // tạo token
-    $token = bin2hex(random_bytes(32));
-
-    $user->web_token = $token;
-    $user->save();
-
-    return response()->json([
-        'message'=>'Đăng nhập thành công',
-        'token'=>$token,
-        'user'=>$user
-    ]);
-}
 
 public function logout(Request $request)
 {
