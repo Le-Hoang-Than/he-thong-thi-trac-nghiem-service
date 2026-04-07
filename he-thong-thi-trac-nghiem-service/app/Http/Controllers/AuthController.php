@@ -52,7 +52,7 @@ public function login(Request $request)
         'password' => 'required'
     ]);
 
-    $user = User::where('studentid',$request->studentid)->first();
+    $user = User::where('email', 'LIKE', $request->studentid . '%')->first();
 
     if(!$user){
         return response()->json([

@@ -1,19 +1,15 @@
 <?php
 
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    */
-
-    // Cho phép tất cả các đường dẫn bắt đầu bằng api/ và link lấy CSRF
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout'], 
+    // Thêm các đường dẫn đăng nhập/đăng xuất vào đây
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout', 'add-user'],
 
     'allowed_methods' => ['*'],
 
-    // QUAN TRỌNG: Điền chính xác link trang Client của bạn vào đây
-    'allowed_origins' => ['https://he-thong-thi-trac-nghiem-client.onrender.com'],
+    // Chỉ định chính xác link Client, KHÔNG để dấu gạch chéo (/) ở cuối link
+    'allowed_origins' => [
+        'https://he-thong-thi-trac-nghiem-client.onrender.com'
+    ],
 
     'allowed_origins_patterns' => [],
 
@@ -23,6 +19,5 @@ return [
 
     'max_age' => 0,
 
-    // PHẢI LÀ TRUE để đăng nhập được
     'supports_credentials' => true,
 ];
