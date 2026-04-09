@@ -35,9 +35,23 @@ class QuestionController extends Controller
         ->values();
 
     $time_spent = time() - $existingResult->start_time; 
-    $total_time = 2700; // 45 phút = 2700 giây
+    $total_time = 10; // 35 phút = 2100 giây
     $time_left = $total_time - $time_spent;
+    if ($time_left <= 0) {
+    // 1. Cập nhật trạng thái bài thi thành Closed ngay lập tức
+    $existingResult->result_status = 'Closed';
+    $existingResult->end_time = time();
+    $existingResult->save();
 
+    // 2. Trả về thông báo hết giờ thay vì trả về bộ câu hỏi
+    return response()->json([
+        'message' => 'Hết thời gian làm bài!',
+        'status' => 'timeout',
+        'rid' => $existingResult->rid,
+        'time_left' => 0,
+        'data' => [] // Không cho xem câu hỏi nữa để tránh gian lận
+    ]);
+}
     return response()->json([
         'message' => 'Đang thi dở',
         'rid' => $existingResult->rid,
@@ -71,8 +85,8 @@ class QuestionController extends Controller
     $newResult->start_time = time();
     $newResult->end_time = 0; 
     $newResult->score_obtained = 0;
-    $newResult->percentage_obtained = 0; // Sửa tên ở đây
-    $newResult->attempted_ip = $request->ip(); // Sửa ips thành attempted_ip
+    $newResult->percentage_obtained = 0; 
+    $newResult->attempted_ip = $request->ip(); 
     $newResult->save();
 
     $rid = $newResult->rid; // Lấy rid vừa tự sinh ra
@@ -86,6 +100,7 @@ class QuestionController extends Controller
     return response()->json([
         'status' => 'success',
         'rid' => $rid,
+        'time_left' => 10, // Mặc định 35 phút cho lần thi mới
         'total' => $finalQuestions->count(),
         'data' => $finalQuestions
     ]);
@@ -127,7 +142,7 @@ class QuestionController extends Controller
         'rid' => $rid // BẮT BUỘC có RID ở đây để không bị đè điểm lần thi trước
     ], 
     [
-        'q_option' => $oid,
+        'q_option' => $request->oid,
         'score_u' => $score
     ]
 );
@@ -150,7 +165,7 @@ public function submitExam(Request $request,$rid)
 
     // 1. Chỉ tính điểm cho những câu thuộc đúng lượt thi (rid) này
     $answers = \App\Models\SavsoftAnswer::where('uid', $uid)
-                ->where('rid', $rid); // Quan trọng nhất là dòng này
+                ->where('rid', $rid); 
 
     $total_answered = $answers->count();
     $total_score = $answers->sum('score_u'); // Tổng số câu đúng
@@ -183,16 +198,23 @@ public function submitExam(Request $request,$rid)
 }
 public function getExamHistory(Request $request)
 {
-    // 1. Lấy UID của sinh viên đang đăng nhập
-    $uid = $request->user()->uid;
+    // 1. Lấy Token từ Header và tìm User
+    $token = $request->bearerToken();
+    $user = \App\Models\User::where('web_token', $token)->first();
 
-    // 2. Dùng Model lấy lịch sử, kèm theo thông tin bộ đề (quiz)
-    $history = \App\Models\SavsoftResult::with('quiz:quid,quiz_name') // Chỉ lấy id và tên bộ đề
+    // Kiểm tra nếu không tìm thấy User (Token sai hoặc hết hạn)
+    if (!$user) {
+        return response()->json(['message' => 'Bạn cần đăng nhập để xem lịch sử'], 401);
+    }
+
+    $uid = $user->uid; // Bây giờ chắc chắn có UID rồi nè
+
+    // 2. Dùng Model lấy lịch sử
+    $history = \App\Models\SavsoftResult::with('quiz:quid,quiz_name')
         ->where('uid', $uid)
-        ->orderBy('rid', 'desc') // Bài mới nhất hiện lên đầu
+        ->orderBy('rid', 'desc')
         ->get();
 
-    // 3. Trả về JSON
     return response()->json([
         'status' => 'success',
         'data' => $history
