@@ -35,7 +35,7 @@ class QuestionController extends Controller
         ->values();
 
     $time_spent = time() - $existingResult->start_time; 
-    $total_time = 10; // 35 phút = 2100 giây
+    $total_time = 2100; // 35 phút = 2100 
     $time_left = $total_time - $time_spent;
     if ($time_left <= 0) {
     // 1. Cập nhật trạng thái bài thi thành Closed ngay lập tức
