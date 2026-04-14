@@ -5,7 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL; // <-- THÊM DÒNG NÀY Ở ĐÂY
-
+use App\Models\User;
 class AppServiceProvider extends ServiceProvider
 {
     /**
