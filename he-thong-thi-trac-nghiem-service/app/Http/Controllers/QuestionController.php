@@ -35,7 +35,7 @@ class QuestionController extends Controller
         ->values();
 
     $time_spent = time() - $existingResult->start_time; 
-    $total_time = 10; // 35 phút = 2100 giây
+    $total_time = 2100; // 35 phút = 2100 giây
     $time_left = $total_time - $time_spent;
     if ($time_left <= 0) {
     // 1. Cập nhật trạng thái bài thi thành Closed ngay lập tức
@@ -60,21 +60,32 @@ class QuestionController extends Controller
     ]);
 }
 
-    // 2. BỐC ĐỀ MỚI: (Giữ nguyên logic bốc từ qcl)
-    $structure = \App\Models\SavsoftQcl::where('quid', $quid)->get();
-    $allSelectedQids = [];
+    // 2. BỐC ĐỀ THEO CẤU TRÚC (QCL) - Xử lý chống trùng lặp do DB
+$structure = \App\Models\SavsoftQcl::where('quid', $quid)->get();
+$allSelectedQids = [];
+$processedCids = []; // Mảng này dùng để đánh dấu chương nào đã bốc rồi
 
-    foreach ($structure as $row) {
-        $qids = \App\Models\SavsoftQbank::where('cid', $row->cid)
-            ->inRandomOrder() 
-            ->limit($row->noq)
-            ->pluck('qid')
-            ->toArray();
-            
-        $allSelectedQids = array_merge($allSelectedQids, $qids);
+foreach ($structure as $row) {
+    // Nếu chương này (cid) đã được bốc ở dòng trước đó rồi thì bỏ qua dòng trùng này
+    if (in_array($row->cid, $processedCids)) {
+        continue;
     }
+
+    // Bốc đúng số lượng noq cho chương này
+    $qids = \App\Models\SavsoftQbank::where('cid', $row->cid)
+        ->inRandomOrder() 
+        ->limit($row->noq) 
+        ->pluck('qid')
+        ->toArray();
+        
+    $allSelectedQids = array_merge($allSelectedQids, $qids);
     
-    shuffle($allSelectedQids); 
+    // Đánh dấu đã xử lý chương này xong
+    $processedCids[] = $row->cid;
+}
+
+// Trộn mảng để đề thi ngẫu nhiên
+shuffle($allSelectedQids);
 
     // 3. GHI SỔ: Dùng Model để tạo mới bản ghi
     $newResult = new SavsoftResult();
@@ -100,7 +111,7 @@ class QuestionController extends Controller
     return response()->json([
         'status' => 'success',
         'rid' => $rid,
-        'time_left' => 10, // Mặc định 35 phút cho lần thi mới
+        'time_left' => 2100, // Mặc định 35 phút cho lần thi mới
         'total' => $finalQuestions->count(),
         'data' => $finalQuestions
     ]);
