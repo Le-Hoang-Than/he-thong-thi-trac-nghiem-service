@@ -24,3 +24,14 @@
         Route::get('/exam-history', [QuestionController::class, 'getExamHistory']);
     });
 
+use Illuminate\Http\Request;
+
+
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum')
+;
+Route::get('/test-users', function () {
+    
+    return Illuminate\Support\Facades\DB::table('savsoft_users')->get();
+});
