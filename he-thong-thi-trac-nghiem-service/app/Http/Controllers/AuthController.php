@@ -25,7 +25,7 @@ class AuthController extends Controller
 
         try {
             // Đồng nhất dùng BASE_API_URL giống ExamController
-            $baseUrl = rtrim(env('BASE_API_URL', 'http://127.0.0.1:8000'), '/');
+            $baseUrl = rtrim(env('BASE_API_URL', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com'), '/');
             
             $response = Http::post($baseUrl . '/api/login', $credentials);
 
@@ -54,7 +54,7 @@ class AuthController extends Controller
         $token = session('auth_token');
         if ($token) {
             try {
-                $baseUrl = rtrim(env('BASE_API_URL', 'http://127.0.0.1:8000'), '/');
+                $baseUrl = rtrim(env('BASE_API_URL', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com'), '/');
                 Http::withToken($token)->post($baseUrl . '/api/logout');
             } catch (\Exception $e) {
                 // Ignore errors, just logout locally
@@ -74,7 +74,7 @@ class AuthController extends Controller
     public function testUsers()
     {
         try {
-            $baseUrl = rtrim(env('BASE_API_URL', 'http://127.0.0.1:8000'), '/');
+            $baseUrl = rtrim(env('BASE_API_URL', 'https://he-thong-thi-trac-nghiem-service-lnup.onrender.com'), '/');
             $response = Http::get($baseUrl . '/api/test-users');
 
             if ($response->successful()) {
